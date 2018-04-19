@@ -13,6 +13,7 @@ Christian A. Rodriguez
 
 * Docker: introducción rápida
 * Consideraciones para trabajar con docker
+* Volumenes
 * Docker Compose
 * Workflow de desarrollo
 * Docker en producción

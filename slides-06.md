@@ -68,8 +68,7 @@ Estos nodos pueden usar SO muy pequeños (~ 50MB) dado que su única razón de s
 ## Consideraciones
 
 * El scheduler es el encargado de determinar dónde se inicia cada contenedor.
-* Asociado al scheduler trabajan los health checks que garantizan la
-  conciliación de un estado deseado: que haya N contenedores para el servicio X.
+* Asociado al scheduler trabajan los health checks que garantizan la conciliación de un estado deseado: que haya N contenedores para el servicio X.
 * La distribución mágica del scheduler complica el manejo de volúmenes.
   * Los volúmenes pertenecen a un nodo.
   * Si el nodo cambia, se pierden los datos.
@@ -100,5 +99,4 @@ Estos nodos pueden usar SO muy pequeños (~ 50MB) dado que su única razón de s
 ## Ejemplo Rancher
 
 ![sample](images/rancher-sample.png)
----
 ***

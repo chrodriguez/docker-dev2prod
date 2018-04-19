@@ -8,10 +8,10 @@
   * [Utilizar Versionado semántico](https://semver.org/).
 
 * Deberían
-  * Aplicar Testing: TDD o mejor aun BDD.
-  * Code Review
+  * Aplicar Testing: TDD o mejor aún BDD.
+  * Revisión de código.
   * Integración continua.
-  * Flujos claros de versionado de código: git-flow, GitLab Flow, Github Flow.
+  * Flujos claros de versionado de código: [git-flow](https://jeffkreeftmeijer.com/git-flow/), [GitLab Flow](https://docs.gitlab.com/ee/workflow/gitlab_flow.html), [Github Flow](https://guides.github.com/introduction/flow/).
 ---
 ## La infraestructura...
 
@@ -29,7 +29,7 @@ Automatizar la creación y mantenimiento de estos ambientes
 * Implementando un flujo para el uso del versionado de código, se realizan varios merge a la rama principal, *generalmente master*.
   * Integración continua.
   * Correr tests antes de cada merge.
-  * Code review: *simple con flujos propuestos por GitHub/Gitlab a través PR/MR.*
+  * Revisión de código: *simple con flujos propuestos por GitHub/Gitlab a través PR/MR.*
 
 ---
 ## Nuevos releases

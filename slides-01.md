@@ -36,9 +36,9 @@
   * No utilizan manejadores de procesos tipo systemd.
 * Red pirvada bridgeada en los contenedores.
   * Si se quiere exponer un puerto se debe realizar explícitamente.
-* El filesystem utiliza Union File System. 
+* El filesystem utiliza Union File System ([UFS](https://en.wikipedia.org/wiki/UnionFS)). 
   * Basado en capas.
-  * Al eliminar un un contenedor, su filesystem desaparece.
+  * Al eliminar un contenedor, su filesystem desaparece.
 
 ---
 ## Imágenes y contenedores
@@ -208,10 +208,10 @@ $ docker history chrodriguez/nginx:ubuntu-16.04
 
 * Servicio para almacenar y distribuir imágenes de Docker.
 * Disponible en forma local o usar servicios en la nube:
-  * Instalación privada:
+  * Instalación local:
     * Acceso local para mayor velocidad de descarga.
     * Imágenes privadas en un ambiente controlado y gestionado por la organización.
-  * Servicio en la nube:
+  * Servicios en la nube:
     * Generalmente las registries privadas tienen costo.
 
 ---
