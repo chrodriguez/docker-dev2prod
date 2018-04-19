@@ -76,13 +76,13 @@ rancher-cli utiliza variables de ambiente que lo configuran
 
 * Load balancer.
 * Servicios externos.
-* Escaliamiento horizontal.
+* Escalamiento horizontal.
 * Políticas de schedulling.
 * Healthchecks.
 * Auto scalling: por servicio o hosts de la infraestructura.
 * Integracion con virtualizadores y proveedores de cloud.
 * Integracion con DNS: powerdns o servicios de cloud.
-* Catalogo.
+* Catálogo.
 ---
 ## Las preguntas...
 
