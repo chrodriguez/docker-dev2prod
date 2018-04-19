@@ -100,4 +100,5 @@ Estos nodos pueden usar SO muy pequeños (~ 50MB) dado que su única razón de s
 ## Ejemplo Rancher
 
 ![sample](images/rancher-sample.png)
+---
 ***
