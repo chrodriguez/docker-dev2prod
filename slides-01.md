@@ -34,9 +34,9 @@
 * Sistema Operativo recortado.
 * Un único proceso corriendo: *buena práctica*.
   * No utilizan manejadores de procesos tipo systemd.
-* Red pirvada bridgeada en los contenedores.
+* Red privada bridgeada en los contenedores.
   * Si se quiere exponer un puerto se debe realizar explícitamente.
-* El filesystem utiliza Union File System ([UFS](https://en.wikipedia.org/wiki/UnionFS)). 
+* El filesystem utiliza Union File System ([UFS](https://en.wikipedia.org/wiki/UnionFS)).
   * Basado en capas.
   * Al eliminar un contenedor, su filesystem desaparece.
 
@@ -98,15 +98,15 @@ El siguiente es un ejemplo interactivo
 $ docker run --rm -it ubuntu:14.04
   Unable to find image 'ubuntu:14.04' locally
   14.04: Pulling from library/ubuntu
-  c2c80a08aa8c: Pull complete 
-  6ace04d7a4a2: Pull complete 
-  f03114bcfb25: Pull complete 
-  99df43987812: Pull complete 
-  9c646cd4d155: Pull complete 
+  c2c80a08aa8c: Pull complete
+  6ace04d7a4a2: Pull complete
+  f03114bcfb25: Pull complete
+  99df43987812: Pull complete
+  9c646cd4d155: Pull complete
   Digest: sha256:b92dc7814b2656da61a52a50020443223445fdc2caf1ea0c51fa38381d5608ad
   Status: Downloaded newer image for ubuntu:14.04
 
-  
+
   root@99a3403db59a:/# cat /etc/issue
   Ubuntu 14.04.5 LTS \n \l
 ```
@@ -114,7 +114,7 @@ $ docker run --rm -it ubuntu:14.04
 ---
 ## Creando imágenes
 
-* Las imágenes docker pueden crearse: 
+* Las imágenes docker pueden crearse:
   * A partir de un contenedor ó
   * Usando Dockerfiles
 
@@ -124,7 +124,7 @@ $ docker run --rm -it ubuntu:14.04
 Como los contenedores establecen una capa volátil por encima de la pila de capas de una imagen origen, una vez editado todo lo necesario en un contenedor, los cambios pueden comitirse en una imagen.
 
 ```
-$ docker run -it  ubuntu:14.04 
+$ docker run -it  ubuntu:14.04
 root@7c78d0a777df:/# apt-get update \
   && apt-get install -y nginx && apt-get clean
 root@7c78d0a777df:/# exit
