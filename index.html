@@ -1,0 +1,1320 @@
+<!doctype html>
+<html lang="en">
+  <head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# article: http://ogp.me/ns/article#">
+    <meta charset="utf-8">
+
+<title>De desarrollo a producción usando docker</title>
+
+<meta name="description" content="">
+<meta name="author" content="">
+<meta name="generator" content="reveal-ck 3.8.0">
+
+
+
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+<link rel="stylesheet" href="css/reveal.css">
+<link rel="stylesheet" href="css/theme/league.css" id="theme">
+
+<!-- Code syntax highlighting -->
+<link rel="stylesheet" href="lib/css/zenburn.css">
+
+<link rel="stylesheet" href="css/reveal-ck.css">
+
+<link rel="stylesheet" href="css/custom.css">
+
+<!-- Printing and PDF exports -->
+<script>
+  var link = document.createElement( 'link' );
+  link.rel = 'stylesheet';
+  link.type = 'text/css';
+  link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+  document.getElementsByTagName( 'head' )[0].appendChild( link );
+</script>
+
+<!--[if lt IE 9]>
+<script src="lib/js/html5shiv.js"></script>
+<![endif]-->
+
+  </head>
+
+  <body>
+    <div class="reveal">
+  <!-- Any section element inside of this container is displayed as a slide -->
+  <div class="slides">
+    <section>
+<section>
+
+<h2>De desarrollo a producción usando</h2>
+<h1>docker</h1>
+<p><img alt="Dokcer" src="images/docker.svg" height="200px"><br>
+<small>
+Christian A. Rodriguez
+<br><a href="https://github.com/chrodriguez">https://github.com/chrodriguez</a>
+<br><a href="https://twitter.com/car_unlp">@car_unlp</a>
+</small></p>
+
+</section>
+<section>
+
+<h2>Agenda</h2>
+
+<ul>
+  <li>Docker: introducción rápida</li>
+  <li>Consideraciones para trabajar con docker</li>
+  <li>Volumenes</li>
+  <li>Docker Compose</li>
+  <li>Workflow de desarrollo</li>
+  <li>Docker en producción</li>
+  <li>Rancher</li>
+  <li>Workflow completo</li>
+</ul>
+
+</section>
+</section>
+
+<section>
+<section>
+
+<h1>Docker</h1>
+<h2>Introducción rápida</h2>
+
+</section>
+<section>
+
+<h2>¿Qué es docker?</h2>
+
+<ul>
+  <li>Contenedores de software.
+    <ul>
+      <li>Empaqueta aplicaciones en una unidad estándar de intercambio.</li>
+    </ul>
+  </li>
+  <li>Única pieza de software en un filesystem completo que contiene <strong>todo lo necesario</strong> para ejecutar una aplicación: código, librerías, herramientas, etc.</li>
+  <li>Garantiza que el software <strong>siempre correrá de igual forma</strong> sin importar su ambiente.</li>
+</ul>
+
+</section>
+<section>
+
+<h2>¿Por qué Docker?</h2>
+
+<ul>
+  <li>Rápida configuración de entornos de desarrollo.</li>
+  <li>Favorece las arquitecturas de microservicios.</li>
+  <li>Diferencias entre el ambiente de desarrollo, testing y producción.</li>
+  <li>Instalación de una aplicación en diferentes plataformas.</li>
+  <li>Deploy de aplicaciones complejas.</li>
+  <li>Ejecución de código antiguo.</li>
+  <li>Escalamiento horizontal.</li>
+</ul>
+
+</section>
+<section>
+
+<h2>¿Dónde corre Docker?</h2>
+
+<ul>
+  <li>Docker puede correrse en:
+    <ul>
+      <li>Linux.</li>
+      <li>MacOS.</li>
+      <li>Windows.</li>
+    </ul>
+  </li>
+</ul>
+
+</section>
+<section>
+
+<h2>La idea detrás de los contenedores</h2>
+
+<ul>
+  <li>Sistema Operativo recortado.</li>
+  <li>Un único proceso corriendo: <em>buena práctica</em>.
+    <ul>
+      <li>No utilizan manejadores de procesos tipo systemd.</li>
+    </ul>
+  </li>
+  <li>Red privada bridgeada en los contenedores.
+    <ul>
+      <li>Si se quiere exponer un puerto se debe realizar explícitamente.</li>
+    </ul>
+  </li>
+  <li>El filesystem utiliza Union File System (<a href="https://en.wikipedia.org/wiki/UnionFS">UFS</a>).
+    <ul>
+      <li>Basado en capas.</li>
+      <li>Al eliminar un contenedor, su filesystem desaparece.</li>
+    </ul>
+  </li>
+</ul>
+
+</section>
+<section>
+
+<h2>Imágenes y contenedores</h2>
+
+<ul>
+  <li>Imagen:
+    <ul>
+      <li>Filesystem y parámetros para utilizarla.</li>
+      <li>No cambia nunca y no tiene estados.</li>
+    </ul>
+  </li>
+  <li>Contenedor:
+    <ul>
+      <li>Instancia de una imagen (resultado de ejecutarla).</li>
+      <li>Tiene una capa de RW volátil.</li>
+    </ul>
+  </li>
+</ul>
+
+</section>
+<section>
+
+<h2>Imágenes y contenedores</h2>
+
+<p><img alt="Imagen de Docker" src="images/image-layers.jpg" height="400px"></p>
+
+</section>
+<section>
+
+<h2>Imágenes y contenedores</h2>
+
+<p><img alt="Contenedor de Docker" src="images/container-layers.jpg" height="400px"></p>
+
+</section>
+<section>
+
+<h2>Imágenes y contenedores</h2>
+
+<p><img alt="Compartiendo una imagen" src="images/sharing-layers.jpg" height="480px"></p>
+
+</section>
+<section>
+
+<h2>Imágenes y contenedores</h2>
+
+<p><img alt="Imagen derivada" src="images/saving-space.png" height="400px"></p>
+
+</section>
+<section>
+
+<h2>Comandos básicos</h2>
+
+<pre><code class="language-bash"># Más usados
+docker run
+docker ps
+docker build
+docker images
+docker logs
+docker inspect
+docker volume
+
+# Otros comandos comunes
+docker commit
+docker pull
+docker push
+docker tag
+</code></pre>
+
+</section>
+<section>
+
+<h2>Un ejemplo de uso de docker</h2>
+
+<p>El siguiente es un ejemplo interactivo</p>
+
+<pre><code class="language-bash">$ docker run --rm -it ubuntu:14.04
+  Unable to find image 'ubuntu:14.04' locally
+  14.04: Pulling from library/ubuntu
+  c2c80a08aa8c: Pull complete
+  6ace04d7a4a2: Pull complete
+  f03114bcfb25: Pull complete
+  99df43987812: Pull complete
+  9c646cd4d155: Pull complete
+  Digest: sha256:b92dc7814b2656da61a52a50020443223445fdc2caf1ea0c51fa38381d5608ad
+  Status: Downloaded newer image for ubuntu:14.04
+
+
+  root@99a3403db59a:/# cat /etc/issue
+  Ubuntu 14.04.5 LTS \n \l
+</code></pre>
+
+</section>
+<section>
+
+<h2>Creando imágenes</h2>
+
+<ul>
+  <li>Las imágenes docker pueden crearse:
+    <ul>
+      <li>A partir de un contenedor ó</li>
+      <li>Usando Dockerfiles</li>
+    </ul>
+  </li>
+</ul>
+
+</section>
+<section>
+
+<h2>Imágenes a partir de un contenedor</h2>
+
+<p>Como los contenedores establecen una capa volátil por encima de la pila de capas de una imagen origen, una vez editado todo lo necesario en un contenedor, los cambios pueden comitirse en una imagen.</p>
+
+<pre><code>$ docker run -it  ubuntu:14.04
+root@7c78d0a777df:/# apt-get update \
+  &amp;&amp; apt-get install -y nginx &amp;&amp; apt-get clean
+root@7c78d0a777df:/# exit
+</code></pre>
+
+</section>
+<section>
+
+<h2>Imágenes a partir de un contenedor</h2>
+
+<p>Verificamos el contenedor anterior</p>
+
+<pre><code>$ docker ps -a
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS                     PORTS                    NAMES
+7c78d0a777df        ubuntu:14.04        "/bin/bash"              4 minutes ago Exited (0) 3 seconds ago                            dreamy_joliot
+</code></pre>
+<h3>Creamos la imagen</h3>
+
+<pre><code>$ docker commit 7c78d0a777df chrodriguez/nginx:ubuntu-14.04
+</code></pre>
+<p><small>
+A partir de ahora es posible utilizar la imagen <code>chrodriguez/nginx:ubuntu-14.04</code>
+</small></p>
+
+<pre><code>$ docker run --rm -p 8080:80 chrodriguez/nginx:ubuntu-14.04 \
+  nginx -g "daemon off;"
+</code></pre>
+
+</section>
+<section>
+
+<h2>Dockerfile</h2>
+
+<ul>
+  <li>Archivo de texto plano para crear imágenes de Docker.</li>
+  <li>Permite escribir instrucciones a ejecutar.</li>
+  <li>Automatiza el proceso de la creación de imágenes.</li>
+  <li>Permite repetir y modificar fácilmente una imagen.</li>
+  <li>Generar de forma simple imágenes derivadas.</li>
+</ul>
+
+</section>
+<section>
+
+<h2>Dockerfile</h2>
+
+<pre><code class="language-bash">FROM ubuntu:16.04
+
+# Instalar Nginx y configurar una página personalizada
+RUN apt-get update &amp;&amp; apt-get install -y nginx
+RUN mkdir /var/www/html/ejemplo
+RUN echo "&lt;html&gt;&lt;h1&gt;Nginx en Docker&lt;/h1&gt;&lt;/html&gt;" &gt; /var/www/html/ejemplo/index.html
+
+EXPOSE 80
+CMD    ["nginx", "-g", "daemon off;"]
+</code></pre>
+
+<h3>Creamos la imagen</h3>
+
+<pre><code>docker build -f Dockerfile -t chrodriguez/nginx:ubuntu-16.04 .
+</code></pre>
+
+</section>
+<section>
+
+<h2>Historia de imagen</h2>
+
+<pre><code>$ docker history chrodriguez/nginx:ubuntu-16.04
+  IMAGE          CREATED         CREATED BY                                      SIZE
+  8fd110f3364a   9 minutes ago   /bin/sh -c #(nop)  CMD ["nginx" "-g" "daemon    0 B
+  df1abe4570d5   9 minutes ago   /bin/sh -c #(nop)  EXPOSE 80/tcp                0 B
+  4c9ad433769b   9 minutes ago   /bin/sh -c echo "&lt;html&gt;&lt;h1&gt;Nginx en Docker&lt;/h   38 B
+  aff42d6aa899   9 minutes ago   /bin/sh -c mkdir /var/www/html/ejemplo          0 B
+  136943551ea1   9 minutes ago   /bin/sh -c apt-get update &amp;&amp; apt-get install    96.07 MB
+  f753707788c5   4 weeks ago     /bin/sh -c #(nop)  CMD ["/bin/bash"]            0 B
+  &lt;missing&gt;      4 weeks ago     /bin/sh -c mkdir -p /run/systemd &amp;&amp; echo 'doc   7 B
+  &lt;missing&gt;      4 weeks ago     /bin/sh -c sed -i 's/^#\s*\(deb.*universe\)$/   1.895 kB
+  &lt;missing&gt;      4 weeks ago     /bin/sh -c rm -rf /var/lib/apt/lists/*          0 B
+  &lt;missing&gt;      4 weeks ago     /bin/sh -c set -xe   &amp;&amp; echo '#!/bin/sh' &gt; /u   745 B
+  &lt;missing&gt;      4 weeks ago     /bin/sh -c #(nop) ADD file:b1cd0e54ba28cb1d6d   127.2 MB
+</code></pre>
+
+</section>
+<section>
+
+<h2>La registry</h2>
+
+<ul>
+  <li>Servicio para almacenar y distribuir imágenes de Docker.</li>
+  <li>Disponible en forma local o usar servicios en la nube:
+    <ul>
+      <li>Instalación local:
+        <ul>
+          <li>Acceso local para mayor velocidad de descarga.</li>
+          <li>Imágenes privadas en un ambiente controlado y gestionado por la organización.</li>
+        </ul>
+      </li>
+      <li>Servicios en la nube:
+        <ul>
+          <li>Generalmente las registries privadas tienen costo.</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+</section>
+<section>
+
+<h2>Registry como servicios</h2>
+
+<ul>
+  <li>
+<a href="https://hub.docker.com">Docker Hub</a>
+    <ul>
+      <li>Gratis para imágenes públicas.</li>
+      <li>Plan pago para imágenes privadas.</li>
+      <li>Soporta builds automáticos.</li>
+      <li>Cuentas para organizaciones.</li>
+    </ul>
+  </li>
+  <li>
+<a href="https://docs.gitlab.com/ee/user/project/container_registry.html">Gitlab Registry</a>
+    <ul>
+      <li>Gratis para imágenes públicas o privadas.</li>
+      <li>Soporta builds automáticos.</li>
+      <li>Cuentas para organizaciones.</li>
+    </ul>
+  </li>
+</ul>
+
+</section>
+</section>
+
+<section>
+<section>
+
+<h1>Consideraciones para trabajar con docker</h1>
+
+</section>
+<section>
+
+<h2>Introducción</h2>
+
+<ul>
+  <li>Ya sabemos que:
+    <ul>
+      <li>Las imágenes Docker son inmutables.</li>
+      <li>Los contenedores crean una capa con las diferencias correspondientes respecto de la imagen original.</li>
+    </ul>
+  </li>
+  <li>Entonces los contenedores deberían minimizar los cambios respecto de la imagen original.
+    <ul>
+      <li>Optimizando el uso de espacio y evitando impactos de performance.</li>
+      <li>Promoviendo la reusabilidad.</li>
+    </ul>
+  </li>
+</ul>
+
+</section>
+<section>
+
+<h2>Inmutabilidad en la infraestructura</h2>
+
+<ul>
+  <li>Desplegar una actualización de una aplicación, consiste en crear nuevas intancias y destruir las anteriores, en vez de actualizarlas sobre la instancia productiva.</li>
+  <li>Una vez que una aplicación está corriendo, <strong>¡evitamos tocarla!</strong> promoviendo así:
+    <ul>
+      <li>Repetibilidad.</li>
+      <li>Reducir costos de mantenimiento.</li>
+      <li>Simplificar rollbacks.</li>
+    </ul>
+  </li>
+</ul>
+
+</section>
+<section>
+
+<h2>Lograr inmutabilidad</h2>
+
+<ul>
+  <li>Deben cumplirse los siguientes requerimientos:
+    <ul>
+      <li>La aplicación debe ser stateless. Su estado debe almacenarse en un servicio por fuera del alcance de la <em>infraestructura inmutable</em>.</li>
+      <li>Existe un template y/o conjunto de instrucciones que permiten desplegar una instancia de la aplicación desde cero.</li>
+    </ul>
+  </li>
+</ul>
+
+<p><small class="fragment">
+<em>El segundo punto lo resuelve fácilmente Docker.</em>
+</small></p>
+
+</section>
+<section>
+
+<h2>¿Qué es dinámico entonces?</h2>
+
+<ul>
+  <li>Archivos que se generan por la aplicación.</li>
+  <li>Uploads desde la aplicación.</li>
+  <li>Logs.</li>
+  <li>Spool.</li>
+</ul>
+
+</section>
+<section>
+
+<h2>Imágenes mal formadas</h2>
+
+<p>Un mal diseño de las imágenes impactará en la performance de los contenedores que generarán grandes capas con datos dinámicos.</p>
+
+<p>Ante la actualización del contenedor, estos datos se perderán.</p>
+
+</section>
+<section>
+
+<h2>¿Cómo verificar un mal diseño?</h2>
+
+<p>La opción <code>-s</code> visualiza el tamaño de la capa del contenedor. Su valor <strong>debe tender a cero</strong></p>
+
+<pre><code class="language-bash">$ docker ps -s
+
+docker ps -s
+CONTAINER ID        IMAGE          ....        SIZE
+6ce39ac62830        ubuntu:16.04   ....        0B (virtual 120MB)
+</code></pre>
+
+<pre><code class="language-bash">root@6ce39ac62830:/# echo "hola" &gt; /tmp/prueba
+</code></pre>
+
+<pre><code class="language-bash">$ docker ps -s
+
+docker ps -s
+CONTAINER ID        IMAGE          ....        SIZE
+6ce39ac62830        ubuntu:16.04   ....        5B (virtual 120MB)
+</code></pre>
+
+</section>
+<section>
+
+<h2>¿Cómo verificar un mal diseño?</h2>
+
+<p><small>
+El tamaño es lo que crece el contenedor respecto de la imagen. El tamaño virtual es lo que ocupa el contenedor sumado al tamaño de la imagen.
+</small></p>
+
+<pre><code class="language-bash">root@6ce39ac62830:/# dd if=/dev/zero of=/tmp/lala.img bs=1M count=10
+10+0 records in
+10+0 records out
+10485760 bytes (10 MB, 10 MiB) copied, 0.0127865 s, 820 MB/s
+</code></pre>
+
+<pre><code class="language-bash">$ docker ps -s
+
+docker ps -s
+CONTAINER ID        IMAGE          ....        SIZE
+6ce39ac62830        ubuntu:16.04   ....        10.5MB (virtual 131MB)
+</code></pre>
+
+<pre><code class="language-bash">$ docker diff 6ce39ac62830
+C /tmp
+A /tmp/lala.img
+A /tmp/prueba
+</code></pre>
+
+</section>
+<section>
+
+<h2>Buenas prácticas</h2>
+
+<ul>
+  <li>
+<strong>Los contenedores deben ser efímeros:</strong> pararlos, destruirlos y volverlos a iniciar con una mínima configuración.</li>
+  <li>
+<strong>Evitar paquetes innecesarios:</strong> las imágenes no deben incluir paquetes que no se utilicen.</li>
+  <li>
+<strong>Un proceso por contenedor:</strong> en la mayoría de los casos, se debe correr un proceso por contenedor.</li>
+  <li>
+<strong>La (in)necesidad de ssh</strong>: acceder a un contenedor es algo que debemos evitar.</li>
+</ul>
+
+</section>
+</section>
+
+<section>
+<section>
+
+<h1>Volúmenes</h1>
+
+</section>
+<section>
+
+<h2>¿Cómo se persisten los datos?</h2>
+
+<ul>
+  <li>Los contenedores son volátiles e inmutables.</li>
+  <li>Debemos preservar la información importante.</li>
+  <li>¿Dónde?
+    <ul>
+      <li>En volúmenes de datos.</li>
+    </ul>
+  </li>
+</ul>
+
+</section>
+<section>
+
+<h2>Características de los volúmenes</h2>
+
+<ul>
+  <li>No utilizan un sistema de archivos de unión (UFS).</li>
+  <li>Pueden compartirse y reusarse entre contenedores.</li>
+  <li>Los cambios se hacen directamente en el volumen.</li>
+  <li>La información del volumen <strong>no se incluye</strong> en la imagen.</li>
+  <li>Persisten aún cuando se eliminen todos los contenedores que los usan.
+    <ul>
+      <li>Pueden quedar volúmenes sin referenciar.</li>
+    </ul>
+  </li>
+</ul>
+
+</section>
+<section>
+
+<h2>Tipos de volúmenes</h2>
+
+<ul>
+  <li>Volúmenes anónimos.</li>
+  <li>Volúmenes nombrados.</li>
+  <li>Volúmenes desde el SO host.</li>
+</ul>
+
+</section>
+<section>
+
+<h2>Tipos de volúmenes</h2>
+
+<ul>
+  <li>Al crear un volúmen anónimo o nombrado, la información que exista en el punto de montaje se copia al volumen.</li>
+  <li>Con volúmenes desde el SO host o desde otro contenedor, se oculta la información que exista en el punto de montaje.
+    <ul>
+      <li>Correspondencia con el comando mount.</li>
+    </ul>
+  </li>
+</ul>
+
+</section>
+<section>
+
+<h2>Manejo de Volúmenes</h2>
+
+<pre><code class="language-bash">$ docker run -it -v /prueba ubuntu:16.04 /bin/bash
+  root@a9c1a6e6c0ea:/# ls /prueba/
+  root@a9c1a6e6c0ea:/# echo "Prueba" &gt; /prueba/archivo
+  root@a9c1a6e6c0ea:/# exit
+
+$ docker ps -a
+  CONTAINER ID  IMAGE    COMMAND       CREATED        STATUS                         NAMES
+  a9c1a6e6c0ea  ubuntu   "/bin/bash"   2 minutes ago  Exited (0) About a minute ago  small_jennings
+
+$ docker volume ls
+  DRIVER    VOLUME NAME
+  local     e9c7022b8c7bec55891ca44b8c40de1e5f41cf0fe9505a334bca06a484a5ff1f
+
+$ ls /var/lib/docker/volumes/e9c7022b8c7bec55891ca44b8c40de1e5f41cf0fe9505a334bca06a484a5ff1f/_data
+  archivo
+</code></pre>
+
+</section>
+<section>
+
+<h2>Volúmenes nombrados</h2>
+
+<pre><code class="language-bash">$ docker run -it -v test:/prueba ubuntu /bin/bash
+  root@7def6f99f957:/# ls /prueba/
+  root@7def6f99f957:/# echo "Prueba" &gt; /opt/archivo
+  root@7def6f99f957:/# exit
+
+$ docker ps -a
+  CONTAINER ID  IMAGE    COMMAND       CREATED        STATUS                         NAMES
+  7def6f99f957  ubuntu   "/bin/bash"   2 minutes ago  Exited (0) 2 minutes ago       mad_mccarthy
+
+$ docker volume ls
+  DRIVER    VOLUME NAME
+  local     test
+
+$ ls /var/lib/docker/volumes/test/_data
+  archivo
+</code></pre>
+
+</section>
+</section>
+
+<section>
+<section>
+
+<h1>Docker Compose</h1>
+
+</section>
+<section>
+
+<h2>¿Qué es Docker Compose?</h2>
+
+<ul>
+  <li>Herramienta que permite correr aplicaciones compuestas por múltiples contenedores.</li>
+  <li>La arquitectura se define y configura en un archivo de texto (<a href="http://yaml.org">YAML</a>).
+    <ul>
+      <li>Simple e intuitivo.</li>
+    </ul>
+  </li>
+  <li>Se vale de un comando para:
+    <ul>
+      <li>Iniciar, detener y reconstruir servicios.</li>
+      <li>Ver el estado de los servicios, los logs, etc.</li>
+    </ul>
+  </li>
+</ul>
+
+</section>
+<section>
+
+<h2>Versiones de Docker Compose</h2>
+
+<ul>
+  <li>Hay tres versiones mayores diferentes, la 1, la 2 y la 3.</li>
+  <li>Entre la 1 y la 2 no son compatibles entre sí, entre la 2 y la 3 comparten estructura, pero se quitan algunas opciones en la 3.</li>
+  <li>Veremos la sintaxis de la versión 3.</li>
+</ul>
+
+</section>
+<section>
+
+<h2>Docker Compose: ejemplo</h2>
+
+<ul>
+  <li>Instalación de Wordpress.
+    <ul>
+      <li>Vamos a crear un archivo llamado <code>docker-compose.yml</code>.</li>
+      <li>Definiremos allí la arquitectura de la aplicación.</li>
+      <li>Nos valdremos del comando <code>docker-compose</code> para levantar Wordpress e interactuar con los contenedores generados.</li>
+    </ul>
+  </li>
+</ul>
+
+</section>
+<section>
+
+<h2>Docker compose para wordpress</h2>
+
+<pre><code class="language-bash">version: '3'
+
+services:
+  db:
+    image: mysql:5.7
+    volumes:
+      - dbdata:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: super_secret
+      MYSQL_DATABASE: wordpress
+
+  wordpress:
+    depends_on:
+      - db
+    image: wordpress:4.9.5-php7.0-apache
+    links:
+      - db
+    ports:
+      - "80:80"
+    restart: always
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_PASSWORD: super_secret
+    volumes:
+      - site:/var/www/html
+
+volumes:
+  dbdata:
+  site:
+
+</code></pre>
+<p><small>
+Descargar <a href="images/ejemplos/docker-compose/docker-compose.yml">docker-compose.yml</a>
+</small></p>
+
+</section>
+<section>
+
+<h2>Iniciando los servicios de Wordpress</h2>
+
+<pre><code class="language-bash">$ docker-compose up -d
+Creating network "wordpress_default" with the default driver
+Creating volume "wordpress_dbdata" with default driver
+Creating volume "wordpress_site" with default driver
+Creating wordpress_db_1 ... done
+Creating wordpress_wordpress_1 ... done
+
+$ docker-compose ps
+        Name                       Command               State         Ports       
+-----------------------------------------------------------------------------------
+wordpress_db_1          docker-entrypoint.sh mysqld      Up      3306/tcp          
+wordpress_wordpress_1   docker-entrypoint.sh apach ...   Up      0.0.0.0:80-&gt;80/tcp
+
+</code></pre>
+
+</section>
+<section>
+
+<h2>Usamos Wordpress</h2>
+
+<p><img alt="" src="images/compose-wordpress.png" height="320px"></p>
+
+<pre><code class="language-bash">$ docker-compose logs -f
+wordpress_1  | 172.27.0.1 - - [18/Apr/2018:17:40:45 +0000] "GET / HTTP/1.1" 302 374 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36"
+wordpress_1  | 172.27.0.1 - - [18/Apr/2018:17:40:45 +0000] "GET /wp-admin/install.php HTTP/1.1" 200 4310 "-" "Mozilla/5.0 (X11; Linux x86_64)
+AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36"
+wordpress_1  | 172.27.0.1 - - [18/Apr/2018:17:40:47 +0000] "GET /favicon.ico HTTP/1.1" 200 228 "http://localhost/wp-admin/install.php" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181
+Safari/537.36"
+</code></pre>
+
+</section>
+<section>
+
+<h2>Iniciando y deteniendo Wordpress</h2>
+
+<p>Para detenerlo</p>
+<pre><code class="language-bash">$ docker-compose stop
+  Stopping wordpress_wordpress_1 ... done
+  Stopping wordpress_db_1 ... done
+</code></pre>
+
+<p>Para iniciarlo</p>
+<pre><code>$ docker-compose start
+  Starting db ... done
+  Starting wordpress ... done
+</code></pre>
+
+<p><small>
+docker-compose down detiene y luego remueve los contenedores
+</small></p>
+
+</section>
+</section>
+
+<section>
+<section>
+
+<h1>Workflow de desarrollo</h1>
+
+</section>
+<section>
+
+<h2>Los equipos de desarrollo…</h2>
+
+<ul>
+  <li>Deben
+    <ul>
+      <li>Versionar el código: SVN, GIT.</li>
+      <li>
+<a href="https://semver.org/">Utilizar Versionado semántico</a>.</li>
+    </ul>
+  </li>
+  <li>Deberían
+    <ul>
+      <li>Aplicar Testing: TDD o mejor aún BDD.</li>
+      <li>Revisión de código.</li>
+      <li>Integración continua.</li>
+      <li>Flujos claros de versionado de código: <a href="https://jeffkreeftmeijer.com/git-flow/">git-flow</a>, <a href="https://docs.gitlab.com/ee/workflow/gitlab_flow.html">GitLab Flow</a>, <a href="https://guides.github.com/introduction/flow/">Github Flow</a>.</li>
+    </ul>
+  </li>
+</ul>
+
+</section>
+<section>
+
+<h2>La infraestructura…</h2>
+
+<p>Debe proveer ambientes diferentes para poder aplicar controles de calidad previos a la puesta en producción:</p>
+
+<ul>
+  <li>Preproducción</li>
+  <li>QA</li>
+  <li>Pruebas</li>
+</ul>
+
+<p>Automatizar la creación y mantenimiento de estos ambientes</p>
+
+</section>
+<section>
+
+<h2>El versionado</h2>
+
+<ul>
+  <li>Implementando un flujo para el uso del versionado de código, se realizan varios merge a la rama principal, <em>generalmente master</em>.
+    <ul>
+      <li>Integración continua.</li>
+      <li>Correr tests antes de cada merge.</li>
+      <li>Revisión de código: <em>simple con flujos propuestos por GitHub/Gitlab a través PR/MR.</em>
+</li>
+    </ul>
+  </li>
+</ul>
+
+</section>
+<section>
+
+<h2>Nuevos releases</h2>
+<ul>
+  <li>Un nuevo release respeta semver, entonces su nombre será  <strong>X.Y.Z</strong>.
+    <ul>
+      <li>Según el lenguaje, será necesario compilar y subir el binario a un repositorio: <a href="https://jfrog.com/artifactory/">Artifactory</a> o <a href="https://www.sonatype.com/nexus-repository-sonatype">Nexus</a>.</li>
+      <li>Con docker es el momento de crear una imagen docker y subirla a la registry</li>
+    </ul>
+  </li>
+</ul>
+
+<p><small>
+Si automatizamos estas tareas estamos implementando <a href="https://en.wikipedia.org/wiki/Continuous_delivery">entrega continua</a>
+</small></p>
+
+</section>
+<section>
+
+<h2>Despliegue de versiones</h2>
+
+<ul>
+  <li>No es lo mismo un despliegue de cero que una actualización
+    <ul>
+      <li>Existe estrategias de actualización:
+        <ul>
+          <li><a href="https://martinfowler.com/bliki/CanaryRelease.html">Canary deployment</a></li>
+          <li><a href="https://martinfowler.com/bliki/BlueGreenDeployment.html">Blue Green deployment</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>Esta tarea es complicada si se realiza manual
+    <ul>
+      <li>Sobre todo con aplicaciones que escalan horizontalmente</li>
+      <li><strong>Docker es una gran simplificación a este problema</strong></li>
+    </ul>
+  </li>
+</ul>
+
+</section>
+</section>
+
+<section>
+<section>
+
+<h1>Docker en producción</h1>
+
+</section>
+<section>
+
+<h2>Dos enfoques</h2>
+
+<ul>
+  <li>Usar Docker para iniciar servicios de forma aislada.</li>
+  <li>Usar un cluster de Docker.</li>
+</ul>
+
+</section>
+<section>
+
+<h2>Docker en forma aislada</h2>
+
+<ul>
+  <li>Cada servidor Linux corre el servicio de Docker.</li>
+  <li>Los contenedores pueden iniciarse automáticamente durante el booteo usando:
+    <ul>
+      <li>Manejadores de procesos: <a href="http://upstart.ubuntu.com/">upstart</a>, <a href="https://freedesktop.org/wiki/Software/systemd/">systemd</a> o <a href="http://supervisord.org/">supervisor</a>, etc</li>
+      <li>A través de políticas de reinicio (Docker &gt;= 1.2).</li>
+    </ul>
+  </li>
+</ul>
+
+</section>
+<section>
+
+<h2>Clusters docker</h2>
+
+<p>Un cluster dispone de nodos corriendo Docker Engine de tal forma de poder utilizarlos para correr contenedores.</p>
+
+<p>Estos nodos pueden usar SO muy pequeños (~ 50MB) dado que su única razón de ser es la de proveer un kernel con docker engine:</p>
+<ul>
+  <li><a href="https://rancher.com/rancher-os/">RancherOS</a></li>
+  <li><a href="https://coreos.com/products/container-linux-subscription/">CoreOS</a></li>
+  <li><a href="https://vmware.github.io/photon/">VMWare Photon</a></li>
+  <li><a href="https://github.com/boot2docker/boot2docker">Boot2docker</a></li>
+</ul>
+
+</section>
+<section>
+
+<h3>Los clusters más conocidos</h3>
+
+<table class="product_logos">
+
+<tr>
+<td> <img alt="swarm" src="images/docker-whales.png"> </td>
+<td><a href="https://docs.docker.com/engine/swarm/">Swarm </a></td>
+</tr>
+
+<tr>
+<td> <img alt="rancher" src="images/rancher-logo.png"> </td>
+<td> <a href="http://rancher.com/">Cattle/Rancher</a> </td>
+</tr>
+
+<tr>
+<td> <img alt="kubernetes" src="images/kubernetes-logo.png"> </td>
+<td> <a href="http://kubernetes.io/">Kubernetes</a> </td>
+</tr>
+
+<tr>
+<td> <img alt="mesos" src="images/mesos-logo.png"> </td>
+<td> <a href="http://mesos.apache.org/">Apache Mesos</a> </td>
+</tr>
+
+</table>
+
+</section>
+<section>
+
+<h2>Características de todos los clusters</h2>
+
+<ul>
+  <li>Diseño descentralizado.</li>
+  <li>Servicios, pods o stacks en vez de contenedores.</li>
+  <li>Posibilidad de escalar.</li>
+  <li>Conciliación para alcanzar el estado deseado.</li>
+  <li>Service discovery.</li>
+  <li>Load balancing.</li>
+  <li>Actualizaciones en caliente.</li>
+</ul>
+
+</section>
+<section>
+
+<h2>Consideraciones</h2>
+
+<ul>
+  <li>El scheduler es el encargado de determinar dónde se inicia cada contenedor.</li>
+  <li>Asociado al scheduler trabajan los health checks que garantizan la conciliación de un estado deseado: que haya N contenedores para el servicio X.</li>
+  <li>La distribución mágica del scheduler complica el manejo de volúmenes.
+    <ul>
+      <li>Los volúmenes pertenecen a un nodo.</li>
+      <li>Si el nodo cambia, se pierden los datos.</li>
+    </ul>
+  </li>
+</ul>
+
+</section>
+<section>
+
+<h2>Volúmenes distribuidos</h2>
+
+<ul>
+  <li>Necesidad de compartir datos entre los nodos del cluster.</li>
+  <li>Aparecen diferentes implementaciones de volúmenes compartidos. Las más<br>
+populares son:
+    <ul>
+      <li>NFS</li>
+      <li><a href="https://clusterhq.com/flocker/introduction/">Flocker</a></li>
+    </ul>
+  </li>
+</ul>
+
+</section>
+<section>
+
+<h2>Rancher</h2>
+
+<ul>
+  <li>Interfaz web amigable para gestionar un cluster de Docker.</li>
+  <li>Incluye una API que permite administrar el cluster.</li>
+  <li>Utilidades de línea de comandos.</li>
+  <li>Soporta múltiples plataformas de clustering para Docker:
+    <ul>
+      <li>Cattle</li>
+      <li>Kubernetes</li>
+      <li>Swarm</li>
+      <li>Apache Mesos</li>
+      <li>Windows</li>
+    </ul>
+  </li>
+</ul>
+
+</section>
+<section>
+
+<h2>Ejemplo Rancher</h2>
+
+<p><img src="images/rancher-sample.png" alt="sample"></p>
+
+</section>
+</section>
+
+<section>
+<section>
+
+<h1>Workflow completo</h1>
+
+</section>
+<section>
+
+<h2>Un ejemplo en gitlab</h2>
+
+<p><a href="https://gitlab.com/chrodriguez/demo-lb">https://gitlab.com/chrodriguez/demo-lb</a></p>
+
+</section>
+<section>
+
+<h2>El proyecto en desarrollo</h2>
+
+<p>Según el readme, corremos:</p>
+
+<pre><code>cd docker
+docker-compose -p demo-lb-dev \
+  -f docker-compose.yml -f docker-compose.dev.yml up
+</code></pre>
+<p><small>
+Notar que pasamos 2 docker-compose.yml
+</small></p>
+
+<p>En esta modalidad podemos trabajar sin instalar nada en nuestra PC, editando el<br>
+archivo php de la raíz del proyecto</p>
+
+</section>
+<section>
+
+<h2>Entrega continua</h2>
+
+<p>El archivo <code>.gitlab-ci.yml</code></p>
+
+<pre><code class="language-yml">image: docker:latest
+
+services:
+  - docker:dind
+
+stages:
+  - build
+
+before_script:
+  - export IMAGE_TAG="$CI_BUILD_REF_NAME"
+  - docker login -u "gitlab-ci-token" -p "$CI_BUILD_TOKEN" $CI_REGISTRY
+
+build-docker-image:
+  stage: build
+  script:
+    - docker build --pull -f docker/Dockerfile -t "$CI_REGISTRY_IMAGE:$IMAGE_TAG" .
+    - docker push "$CI_REGISTRY_IMAGE:$IMAGE_TAG"
+  only:
+    - /^\d+\.\d+\.\d+/
+</code></pre>
+<p>Un nuevo tag equivale a una nueva imagen docker</p>
+
+</section>
+<section>
+
+<h2>La aplicación en rancher</h2>
+
+<p>Usaremos rancher-cli con el siguiente docker-compose.yml</p>
+
+<pre><code class="language-yml">version: '2'
+services:
+  web:
+    image: registry.gitlab.com/chrodriguez/demo-lb:0.0.1
+    labels:
+      application: demo-lb
+</code></pre>
+
+<pre><code class="language-bash">$ rancher up
+</code></pre>
+<p>Configuraremos el load balancer a partir del label seteado</p>
+
+<p><small class="fragment">
+rancher-cli utiliza variables de ambiente que lo configuran
+</small></p>
+
+</section>
+<section>
+
+<h2>El potencial de Rancher</h2>
+
+<ul>
+  <li>Load balancer.</li>
+  <li>Servicios externos.</li>
+  <li>Escalamiento horizontal.</li>
+  <li>Políticas de schedulling.</li>
+  <li>Healthchecks.</li>
+  <li>Auto scalling: por servicio o hosts de la infraestructura.</li>
+  <li>Integracion con virtualizadores y proveedores de cloud.</li>
+  <li>Integracion con DNS: powerdns o servicios de cloud.</li>
+  <li>Catálogo.</li>
+</ul>
+
+</section>
+<section>
+
+<h2>Las preguntas…</h2>
+
+<ul>
+  <li>¿Y los logs?</li>
+  <li>¿Y el monitoreo?</li>
+  <li>¿Y las bases de datos?</li>
+  <li>¿Y los backups?</li>
+</ul>
+
+<div class="fragment">
+<strong>Todas tienen respuesta</strong>
+</div>
+
+</section>
+<section>
+
+<h2>Logs</h2>
+
+<ul>
+  <li>Pueden manipularse con:
+    <ul>
+      <li>syslog</li>
+      <li><a href="https://www.fluentd.org/">Fluentd</a></li>
+      <li><a href="https://www.graylog.org/">Graylog</a></li>
+      <li><a href="https://www.elastic.co/products/logstash">Logstash</a></li>
+      <li><a href="https://www.elastic.co/products/kibana">Kibana</a></li>
+    </ul>
+  </li>
+</ul>
+
+</section>
+<section>
+
+<h2>Monitoreo</h2>
+
+<ul>
+  <li>Hoy están de <em>moda</em>:
+    <ul>
+      <li><a href="https://prometheus.io/">Prometheus</a></li>
+      <li><a href="https://www.influxdata.com/">Influx DB</a></li>
+      <li><a href="http://bosun.org/">Bosun</a></li>
+      <li><a href="https://grafana.com/">Grafana</a></li>
+    </ul>
+  </li>
+</ul>
+
+</section>
+<section>
+
+<h2>Las bases de datos y backups</h2>
+
+<ul>
+  <li>Las bases de datos pueden dockerizarse o no</li>
+  <li>Los backups deben hacerse sólo de los volúmenes
+    <ul>
+      <li>En mi caso, <a href="http://rsnapshot.org/">rsnapshot</a> es una excelente alternativa</li>
+      <li><strong>Backupeando la base de datos de rancher, podemos recuperar nuestra infra completa</strong></li>
+    </ul>
+  </li>
+</ul>
+
+</section>
+</section>
+
+<section>
+<section>
+
+<h1>¿Preguntas?</h1>
+
+</section>
+</section>
+<section>
+
+<h2>Algunas perlitas</h2>
+
+<p>Correr una aplicación X11:</p>
+
+<pre><code>$ xhost +
+$ docker run -it --rm -e HOME=$HOME -e DISPLAY=$DISPLAY \
+  -v /tmp/.X11-unix:/tmp/.X11-unix -v $HOME:$HOME --user `id -u` \
+  jarfil/gimp-git
+</code></pre>
+
+<p>Compilar sin compilador:</p>
+<pre><code>$ docker run --rm -v "$PWD":/usr/src/myapp \
+  -w /usr/src/myapp gcc:4.9 gcc -o app *c -Wall
+</code></pre>
+
+<p>Bases de datos para desarrollo</p>
+
+<pre><code>docker run --name=mysql-5.6 -d \
+  -e MYSQL_ALLOW_EMPTY_PASSWORD=true -p 3307:3306 \
+  --restart=always -v mysql-5.6:/var/lib/mysql \
+  mysql:5.6
+</code></pre>
+
+</section>
+<section>
+<section>
+
+<h1>¡Gracias!</h1>
+
+</section>
+</section>
+
+  </div>
+</div>
+
+<script src="lib/js/head.min.js"></script>
+<script src="js/reveal.js"></script>
+
+
+<script>
+  (function() {
+  function extend( a, b ) {
+    for(var i in b) {
+      a[i] = b[i];
+    }
+  }
+  var baseOptions = {
+    transition: 'default',
+
+    dependencies: [
+      { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+      { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+      { src: 'plugin/zoom-js/zoom.js', async: true },
+      { src: 'plugin/notes/notes.js', async: true }
+    ]
+  };
+
+  
+    baseOptions.dependencies.push({ src: 'plugin/menu/lib/bowser.min.js', async: true });
+  
+    baseOptions.dependencies.push({ src: 'plugin/menu/lib/jeesh.min.js', async: true });
+  
+    baseOptions.dependencies.push({ src: 'plugin/menu/menu.js', async: true });
+  
+
+  var configOptions = {"history":true,"parallaxBackgroundImage":"images/index-background-claro.png","parallaxBackgroundSize":"3000px 2120px"}
+  var initializeOptions = {};
+  extend(initializeOptions, baseOptions);
+  extend(initializeOptions, configOptions);
+  Reveal.initialize(initializeOptions);
+})();
+
+</script>
+
+  </body>
+</html>

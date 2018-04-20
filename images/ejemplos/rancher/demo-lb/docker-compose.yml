@@ -1,0 +1,6 @@
+version: '2'
+services:
+  web:
+    image: registry.gitlab.com/chrodriguez/demo-lb:1.0.0
+    labels:
+      application: demo-lb
